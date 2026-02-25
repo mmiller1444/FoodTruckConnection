@@ -26,9 +26,15 @@ export default function PublicMap({ center, items }: { center: [number, number];
   return (
     <MapContainer center={center} zoom={Number(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM || 12)} style={{ height: "100%", width: "100%" }}>
       <TileLayer
+<<<<<<< HEAD
 			attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 			url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
 	  />
+=======
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+>>>>>>> 1cf19db77f0be1c43b7c61e2b147c15308f7a7e9
       {items.filter(i => i.location_lat && i.location_lng).map(i => (
         <Marker key={i.request_id} position={[i.location_lat!, i.location_lng!]} icon={icon}>
           <Popup>
