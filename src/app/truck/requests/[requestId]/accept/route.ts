@@ -10,6 +10,16 @@ export async function POST(_: Request, { params }: { params: { requestId: string
   const { data: myTruck } = await supabase.from("trucks").select("id").eq("owner_id", user.id).single();
 
   const { error } = await supabase.rpc("accept_truck_request", { p_request_id: params.requestId, p_truck_id: myTruck?.id });
+  // If accepted, create in-app notification for business
+  if (!error) {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    await fetch(`${baseUrl}/api/notify/accepted`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ request_id: params.requestId }),
+    }).catch(() => {});
+  }
+
   // If accepted, notify business via Edge Function
   if (!error) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

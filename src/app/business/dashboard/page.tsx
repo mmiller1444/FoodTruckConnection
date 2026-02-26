@@ -7,18 +7,51 @@ export default async function BusinessDashboard() {
   if (!assertRole(role, ["business_owner"])) return <Forbidden />;
 
   const supabase = createClient();
+
+  const { data: notifications } = await supabase
+    .from("notifications")
+    .select("id, created_at, message")
+    .eq("user_id", user!.id)
+    .order("created_at", { ascending: false })
+    .limit(25);
+
   const { data: requests } = await supabase
     .from("truck_requests")
-    .select("id, created_at, start_time, end_time, location_name, status, blanket_request, accepted_truck_id, requested_truck_id")
+    .select("id, created_at, start_time, end_time, location_name, status, blanket_request")
     .eq("business_id", user!.id)
     .order("created_at", { ascending: false });
 
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ marginTop: 0 }}>Business dashboard</h2>
-        <Link className="btn primary" href="/business/requests/new">New request</Link>
+        <h2 style={{ marginTop: 0 }}>Business Owner</h2>
+        <Link className="btn primary" href="/business/requests/new">Request a food truck</Link>
       </div>
+
+      <h3>Notifications</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(notifications || []).map((n: any) => (
+            <tr key={n.id}>
+              <td className="small">{new Date(n.created_at).toLocaleString()}</td>
+              <td>{n.message}</td>
+            </tr>
+          ))}
+          {(notifications || []).length === 0 && (
+            <tr><td colSpan={2} className="small">No notifications yet.</td></tr>
+          )}
+        </tbody>
+      </table>
+
+      <hr />
+
+      <h3 style={{ marginTop: 0 }}>Your requests</h3>
       <table>
         <thead>
           <tr>
@@ -53,7 +86,7 @@ function Forbidden() {
     <div className="card">
       <h2 style={{ marginTop: 0 }}>Not allowed</h2>
       <p className="small">Your account role does not have access to this page.</p>
-      <Link className="btn" href="/role-gate">Back</Link>
+      <Link className="btn" href="/">Back</Link>
     </div>
   );
 }

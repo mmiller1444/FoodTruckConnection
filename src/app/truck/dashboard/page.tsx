@@ -8,9 +8,14 @@ export default async function TruckDashboard() {
 
   const supabase = createClient();
 
-  // Show requests that are either blanket or specifically to this truck owner (by profile id)
-  // In this simple MVP, truck id == owner user id (see schema). If you want multiple trucks per owner, extend the schema.
   const { data: myTruck } = await supabase.from("trucks").select("id, display_name").eq("owner_id", user!.id).single();
+
+  const { data: notifications } = await supabase
+    .from("notifications")
+    .select("id, created_at, message")
+    .eq("user_id", user!.id)
+    .order("created_at", { ascending: false })
+    .limit(25);
 
   const { data: requests } = await supabase
     .from("truck_requests_inbox")
@@ -22,11 +27,34 @@ export default async function TruckDashboard() {
     <div className="card">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <h2 style={{ marginTop: 0 }}>Truck owner dashboard</h2>
+          <h2 style={{ marginTop: 0 }}>Food Truck</h2>
           <div className="small">Truck: <strong>{myTruck?.display_name || "Not set"}</strong></div>
         </div>
         <Link className="btn" href="/truck/requests">View all requests</Link>
       </div>
+
+      <hr />
+
+      <h3 style={{ marginTop: 0 }}>Notifications</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(notifications || []).map((n: any) => (
+            <tr key={n.id}>
+              <td className="small">{new Date(n.created_at).toLocaleString()}</td>
+              <td>{n.message}</td>
+            </tr>
+          ))}
+          {(notifications || []).length === 0 && (
+            <tr><td colSpan={2} className="small">No notifications yet.</td></tr>
+          )}
+        </tbody>
+      </table>
 
       <hr />
 
@@ -73,7 +101,7 @@ function Forbidden() {
     <div className="card">
       <h2 style={{ marginTop: 0 }}>Not allowed</h2>
       <p className="small">Your account role does not have access to this page.</p>
-      <Link className="btn" href="/role-gate">Back</Link>
+      <Link className="btn" href="/">Back</Link>
     </div>
   );
 }

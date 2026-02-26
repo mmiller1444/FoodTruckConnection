@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
+/**
+ * Server Components on Vercel cannot set/remove cookies.
+ * Cookie updates happen in Middleware + Route Handlers.
+ */
 export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -11,9 +15,6 @@ export function createClient() {
       get(name: string) {
         return cookieStore.get(name)?.value;
       },
-      // IMPORTANT:
-      // Server Components cannot set/remove cookies on Vercel.
-      // Cookie updates happen in middleware and route handlers.
       set() {},
       remove() {},
     },

@@ -26,7 +26,7 @@ export default function PublicMap({ center, items }: { center: [number, number];
   return (
     <MapContainer center={center} zoom={Number(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM || 12)} style={{ height: "100%", width: "100%" }}>
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution='&copy; OpenStreetMap contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {items.filter(i => i.location_lat && i.location_lng).map(i => (

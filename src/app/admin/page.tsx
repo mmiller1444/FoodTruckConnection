@@ -1,19 +1,80 @@
 import Link from "next/link";
 import { getUserAndRole, assertRole } from "../../lib/auth";
 import { createClient } from "../../lib/supabase/server";
+import { dayRangeUtcIso, todayInTz } from "../../lib/time";
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: { searchParams?: { day?: string } }) {
   const { role } = await getUserAndRole();
   if (!assertRole(role, ["admin"])) return <Forbidden />;
 
   const supabase = createClient();
 
+  const day = searchParams?.day || todayInTz("America/Denver");
+  const { startIso, endIso } = dayRangeUtcIso(day, "America/Denver");
+
+  const { data: bookings } = await supabase
+    .from("public_bookings")
+    .select("*")
+    .gte("start_time", startIso)
+    .lt("start_time", endIso)
+    .order("start_time", { ascending: true });
+
   const { data: releases } = await supabase.from("releases").select("*").order("created_at", { ascending: false });
-  const { data: profiles } = await supabase.from("profiles").select("id, email, full_name, role").order("created_at", { ascending: false }).limit(50);
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, email, full_name, role")
+    .order("created_at", { ascending: false })
+    .limit(50);
 
   return (
     <div className="card">
       <h2 style={{ marginTop: 0 }}>Admin</h2>
+
+      <div className="row" style={{ justifyContent: "space-between", alignItems: "end", gap: 12 }}>
+        <div>
+          <h3 style={{ marginTop: 0 }}>Scheduled food trucks</h3>
+          <div className="small">Showing accepted bookings for <strong>{day}</strong> (America/Denver)</div>
+        </div>
+
+        <form method="get" className="row" style={{ gap: 8, alignItems: "end" }}>
+          <div>
+            <div className="label">Day</div>
+            <input className="input" type="date" name="day" defaultValue={day} />
+          </div>
+          <button className="btn primary" type="submit">Filter</button>
+        </form>
+      </div>
+
+      <table style={{ marginTop: 12 }}>
+        <thead>
+          <tr>
+            <th>Truck</th>
+            <th>Time</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(bookings || []).map((b: any) => (
+            <tr key={b.request_id}>
+              <td>{b.truck_name}</td>
+              <td>
+                {new Date(b.start_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -{" "}
+                {new Date(b.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </td>
+              <td>{b.location_name}</td>
+            </tr>
+          ))}
+          {(bookings || []).length === 0 && (
+            <tr>
+              <td colSpan={3} className="small">
+                No accepted bookings for this day.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      <hr />
 
       <h3>Change control (Releases)</h3>
       <p className="small">
@@ -109,7 +170,7 @@ function Forbidden() {
     <div className="card">
       <h2 style={{ marginTop: 0 }}>Not allowed</h2>
       <p className="small">Your account role does not have access to this page.</p>
-      <Link className="btn" href="/role-gate">Back</Link>
+      <Link className="btn" href="/">Back</Link>
     </div>
   );
 }

@@ -47,6 +47,13 @@ export async function POST(req: Request) {
 
   if (error) return bad(400, error.message);
 
+  // Create in-app notifications for truck owners
+  await fetch(new URL('/api/notify/new-request', req.url), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ request_id: inserted.id }),
+  }).catch(() => {});
+
   // Call Edge Function notify (server-to-server)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const fnUrl = `${supabaseUrl}/functions/v1/notify`;
