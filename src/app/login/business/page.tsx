@@ -21,7 +21,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="card" style={ maxWidth: 520 }>
+    <div className="card" style={{ maxWidth: 520 }}>
       <h2 style={ marginTop: 0 }>Business Owner login</h2>
       <p className="small">Request trucks and view notifications.</p>
       <form onSubmit={onSubmit}>

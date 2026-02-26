@@ -21,7 +21,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="card" style={ maxWidth: 520 }>
+    <div className="card" style={{ maxWidth: 520 }}>
       <h2 style={ marginTop: 0 }>Food Truck login</h2>
       <p className="small">View business requests and accept/ignore invitations.</p>
       <form onSubmit={onSubmit}>
