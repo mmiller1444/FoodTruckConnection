@@ -1,4 +1,7 @@
 export async function getUserAndRole() {
+export function assertRole(role: string | null, allowed: string[]) {
+  return role !== null && allowed.includes(role);
+}
   const supabase = createClient();
 
   const { data: userData } = await supabase.auth.getUser();
