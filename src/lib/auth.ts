@@ -1,22 +1,29 @@
-import { createClient } from "./supabase/server";
-
-export type AppRole = "truck_owner" | "business_owner" | "admin";
-
 export async function getUserAndRole() {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { user: null, role: null as AppRole | null };
+
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user ?? null;
+
+  if (!user) {
+    return { user: null, role: null, fullName: null, email: null, profileExists: false };
+  }
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("role, full_name, email")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
-  if (error) return { user, role: null as AppRole | null, profileError: error.message };
-  return { user, role: profile?.role as AppRole, fullName: profile?.full_name as string | null };
-}
+  // maybeSingle() returns null when no row found
+  if (!profile || error) {
+    return { user, role: null, fullName: null, email: user.email ?? null, profileExists: false };
+  }
 
-export function assertRole(role: AppRole | null, allowed: AppRole[]) {
-  return !!role && allowed.includes(role);
+  return {
+    user,
+    role: profile.role ?? null,
+    fullName: profile.full_name ?? null,
+    email: profile.email ?? user.email ?? null,
+    profileExists: true,
+  };
 }
