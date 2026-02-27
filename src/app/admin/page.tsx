@@ -118,49 +118,16 @@ export default async function AdminPage({ searchParams }: { searchParams?: { day
           )}
         </tbody>
       </table>
+<hr />
 
-      <hr />
-
-      <h3>User roles</h3>
-      <p className="small">Assign roles after users sign up.</p>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Set role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(profiles || []).map((p: any) => (
-            <tr key={p.id}>
-              <td>{p.full_name || ""}</td>
-              <td className="small">{p.email}</td>
-              <td><span className="badge">{p.role || "none"}</span></td>
-              <td>
-                <form action={`/admin/users/${p.id}/role`} method="post" className="row" style={{ alignItems: "center" }}>
-                  <select className="input" name="role" defaultValue={p.role || ""} style={{ maxWidth: 220 }}>
-                    <option value="">none</option>
-                    <option value="business_owner">business_owner</option>
-                    <option value="truck_owner">truck_owner</option>
-                    <option value="admin">admin</option>
-                  </select>
-                  <button className="btn" type="submit">Save</button>
-                </form>
-              </td>
-            </tr>
-          ))}
-          {(profiles || []).length === 0 && (
-            <tr><td colSpan={4} className="small">No users yet.</td></tr>
-          )}
-        </tbody>
-      </table>
-
-      <div className="row" style={{ marginTop: 12 }}>
-        <Link className="btn" href="/role-gate">Back</Link>
-      </div>
+<h3>User management</h3>
+<p className="small">
+  Assign roles on the Users page.
+</p>
+<div className="row" style={{ marginTop: 8 }}>
+  <Link className="btn primary" href="/admin/users">Go to Users</Link>
+  <Link className="btn" href="/role-gate">Back</Link>
+</div>
     </div>
   );
 }

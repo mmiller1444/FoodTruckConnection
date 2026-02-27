@@ -1,132 +1,141 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "../../../../lib/supabase/browser";
+
+type Truck = { id: string; display_name: string };
+
+function addMonths(date: Date, months: number) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
 
 export default function NewRequestPage() {
-  const [specific, setSpecific] = useState(true);
-  const [requestedTruckId, setRequestedTruckId] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [locationName, setLocationName] = useState("");
-  const [locationLat, setLocationLat] = useState("");
-  const [locationLng, setLocationLng] = useState("");
-  const [notes, setNotes] = useState("");
+  const supabase = createClient();
 
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [specific, setSpecific] = useState(false);
+  const [requestedTruckId, setRequestedTruckId] = useState<string>("");
+
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0,10));
+  const [start, setStart] = useState("11:00");
+  const [end, setEnd] = useState("14:00");
+  const [locationName, setLocationName] = useState("");
+  const [lat, setLat] = useState<string>("");
+  const [lng, setLng] = useState<string>("");
+  const [notes, setNotes] = useState("");
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
-  const [busy, setBusy] = useState(false);
 
-  async function submitRequest() {
-    setErr("");
-    setOk("");
-    setBusy(true);
+  const maxDate = useMemo(() => addMonths(new Date(), 3).toISOString().slice(0,10), []);
 
-    try {
-      console.log("Submitting via /api/requests/create");
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("trucks")
+        .select("id, display_name")
+        .eq("is_active", true)
+        .order("display_name");
+      setTrucks((data as any) || []);
+    })();
+  }, []);
 
-      const payload = {
-        blanket_request: !specific,
-        requested_truck_id: specific ? (requestedTruckId || null) : null,
-        start_time: new Date(startTime).toISOString(),
-        end_time: new Date(endTime).toISOString(),
-        location_name: locationName,
-        location_lat: locationLat ? Number(locationLat) : null,
-        location_lng: locationLng ? Number(locationLng) : null,
-        notes: notes || null,
-      };
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(""); setOk("");
 
-      const resp = await fetch("/api/requests/create", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const j = await resp.json().catch(() => ({}));
-
-      if (!resp.ok) {
-        setErr(j.error || `Failed (${resp.status})`);
-        return;
-      }
-
-      setOk(`Request submitted! id=${j.id}`);
-    } catch (e: any) {
-      setErr(e?.message || "Unexpected error");
-    } finally {
-      setBusy(false);
+    if (date > maxDate) {
+      setErr("Requests are limited to up to 3 months in advance.");
+      return;
     }
+
+    const startTime = new Date(`${date}T${start}:00`);
+    const endTime = new Date(`${date}T${end}:00`);
+    if (endTime <= startTime) {
+      setErr("End time must be after start time.");
+      return;
+    }
+
+    const payload: any = {
+      requested_truck_id: specific ? (requestedTruckId || null) : null,
+      blanket_request: !specific,
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+      location_name: locationName,
+      location_lat: lat ? Number(lat) : null,
+      location_lng: lng ? Number(lng) : null,
+      notes: notes || null,
+    };
+
+    const resp = await fetch('/api/requests/create', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...payload, blanket_request: !specific }) });
+    const j = await resp.json().catch(() => ({}));
+    if (!resp.ok) setErr(j.error || 'Failed to submit');
+    else setOk('Request submitted!');
   }
 
   return (
-    <div className="card">
-      <h2 style={{ marginTop: 0 }}>Request a food truck</h2>
+    <div className="card" style={{ maxWidth: 720 }}>
+      <h2 style={{ marginTop: 0 }}>New request</h2>
+      <p className="small">Up to 3 months out. Provide lat/lng to show on public map.</p>
+      <form onSubmit={submit}>
+        <div className="row">
+          <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input type="checkbox" checked={specific} onChange={e => setSpecific(e.target.checked)} />
+            Request specific truck
+          </label>
+        </div>
 
-      <div className="label">Request type</div>
-      <label className="small">
-        <input
-          type="checkbox"
-          checked={specific}
-          onChange={(e) => setSpecific(e.target.checked)}
-        />{" "}
-        Request a specific truck (uncheck for blanket request)
-      </label>
+        {specific && (
+          <>
+            <div className="label">Truck</div>
+            <select className="input" value={requestedTruckId} onChange={e => setRequestedTruckId(e.target.value)} required>
+              <option value="">Select truck</option>
+              {trucks.map(t => <option key={t.id} value={t.id}>{t.display_name}</option>)}
+            </select>
+          </>
+        )}
 
-      {specific && (
-        <>
-          <div className="label">Requested Truck ID</div>
-          <input
-            className="input"
-            value={requestedTruckId}
-            onChange={(e) => setRequestedTruckId(e.target.value)}
-            placeholder="Truck UUID"
-          />
-        </>
-      )}
+        <div className="row">
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div className="label">Date</div>
+            <input className="input" type="date" value={date} onChange={e => setDate(e.target.value)} min={new Date().toISOString().slice(0,10)} max={maxDate} required />
+          </div>
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div className="label">Start</div>
+            <input className="input" type="time" value={start} onChange={e => setStart(e.target.value)} required />
+          </div>
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div className="label">End</div>
+            <input className="input" type="time" value={end} onChange={e => setEnd(e.target.value)} required />
+          </div>
+        </div>
 
-      <div className="label">Start</div>
-      <input
-        className="input"
-        type="datetime-local"
-        value={startTime}
-        onChange={(e) => setStartTime(e.target.value)}
-        required
-      />
+        <div className="label">Location name</div>
+        <input className="input" value={locationName} onChange={e => setLocationName(e.target.value)} placeholder="e.g., Downtown Plaza" required />
 
-      <div className="label">End</div>
-      <input
-        className="input"
-        type="datetime-local"
-        value={endTime}
-        onChange={(e) => setEndTime(e.target.value)}
-        required
-      />
+        <div className="row">
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div className="label">Latitude (optional)</div>
+            <input className="input" value={lat} onChange={e => setLat(e.target.value)} placeholder="45.7833" />
+          </div>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div className="label">Longitude (optional)</div>
+            <input className="input" value={lng} onChange={e => setLng(e.target.value)} placeholder="-108.5007" />
+          </div>
+        </div>
 
-      <div className="label">Location name</div>
-      <input
-        className="input"
-        value={locationName}
-        onChange={(e) => setLocationName(e.target.value)}
-        required
-      />
+        <div className="label">Notes (optional)</div>
+        <textarea className="input" value={notes} onChange={e => setNotes(e.target.value)} rows={3} />
 
-      <div className="label">Notes</div>
-      <textarea
-        className="input"
-        rows={3}
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-      />
+        {err && <p style={{ color: "var(--danger)" }}>{err}</p>}
+        {ok && <p style={{ color: "var(--accent)" }}>{ok}</p>}
 
-      {err && <p style={{ color: "var(--danger)" }}>{err}</p>}
-      {ok && <p style={{ color: "var(--success)" }}>{ok}</p>}
-
-      <button
-        className="btn primary"
-        type="button"
-        onClick={submitRequest}
-        disabled={busy}
-      >
-        {busy ? "Submitting..." : "Submit request"}
-      </button>
+        <div className="row" style={{ marginTop: 12 }}>
+          <button className="btn primary" type="submit">Submit request</button>
+          <a className="btn" href="/business/dashboard">Back</a>
+        </div>
+      </form>
     </div>
   );
 }

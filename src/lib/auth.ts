@@ -2,8 +2,8 @@ import { createClient } from "./supabase/server";
 
 export type UserRole = "admin" | "truck_owner" | "business_owner" | null;
 
-export function assertRole(role: UserRole, allowed: UserRole[]) {
-  return role !== null && allowed.includes(role);
+export function assertRole(role: UserRole, allowed: Exclude<UserRole, null>[]) {
+  return role !== null && allowed.includes(role as any);
 }
 
 export async function getUserAndRole() {
@@ -20,6 +20,7 @@ export async function getUserAndRole() {
       fullName: null,
       email: null,
       profileExists: false,
+      profileError: null as string | null,
     };
   }
 
@@ -29,13 +30,25 @@ export async function getUserAndRole() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile || error) {
+  if (error) {
     return {
       user,
       role: null as UserRole,
       fullName: null,
       email: user.email ?? null,
       profileExists: false,
+      profileError: error.message,
+    };
+  }
+
+  if (!profile) {
+    return {
+      user,
+      role: null as UserRole,
+      fullName: null,
+      email: user.email ?? null,
+      profileExists: false,
+      profileError: null,
     };
   }
 
@@ -45,5 +58,6 @@ export async function getUserAndRole() {
     fullName: profile.full_name ?? null,
     email: profile.email ?? user.email ?? null,
     profileExists: true,
+    profileError: null as string | null,
   };
 }
