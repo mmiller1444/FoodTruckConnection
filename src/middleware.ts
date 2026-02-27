@@ -15,30 +15,26 @@ export async function middleware(request: NextRequest) {
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
+          response.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-            maxAge: 0,
-          });
+          response.cookies.set({ name, value: "", ...options, maxAge: 0 });
         },
       },
     }
   );
 
-  // Refresh session
+  // IMPORTANT: refresh session (this is what prevents "logged out" loops)
   await supabase.auth.getUser();
 
   return response;
 }
 
+/**
+ * Apply middleware to all routes except Next internals.
+ * NOTE: we intentionally do NOT exclude /api because some routes rely on session.
+ * If you later want to exclude /api, do it carefully.
+ */
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
