@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getUserAndRole, assertRole } from "../../../lib/auth";
 import { createClient } from "../../../lib/supabase/server";
-
+export const dynamic = "force-dynamic";
 export default async function AdminUsersPage() {
   const { role } = await getUserAndRole();
   if (!assertRole(role, ["admin"])) return <Forbidden />;
