@@ -22,13 +22,16 @@ export default function RoleLoginForm({ title, subtitle, redirectTo }: Props) {
     e.preventDefault();
     setErr("");
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
     if (error) {
       setErr(error.message);
-      return;
+    } else {
+      router.push(redirectTo);
     }
-
-    router.push(redirectTo);
   }
 
   return (
@@ -66,10 +69,6 @@ export default function RoleLoginForm({ title, subtitle, redirectTo }: Props) {
           </a>
         </div>
       </form>
-
-      <p className="small">
-        No account? <a href="/signup">Sign up</a>
-      </p>
     </div>
   );
 }
