@@ -1,6 +1,9 @@
 ﻿import Link from "next/link";
 import { getUserAndRole, assertRole } from "../../../lib/auth";
 import { createClient } from "../../../lib/supabase/server";
+import RequestActions from "./request-actions";
+
+export const dynamic = "force-dynamic";
 
 export default async function TruckDashboard() {
   const { role, user } = await getUserAndRole();
@@ -8,7 +11,24 @@ export default async function TruckDashboard() {
 
   const supabase = createClient();
 
-  const { data: myTruck } = await supabase.from("trucks").select("id, display_name").eq("owner_id", user!.id).single();
+  // truck_owner: their own truck
+  const { data: myTruck } = await supabase
+    .from("trucks")
+    .select("id, display_name")
+    .eq("owner_id", user!.id)
+    .maybeSingle();
+
+  // admin: list all trucks for "act as"
+  const adminTruckOptions =
+    role === "admin"
+      ? (
+          await supabase
+            .from("trucks")
+            .select("id, display_name")
+            .order("created_at", { ascending: false })
+            .limit(500)
+        ).data || []
+      : [];
 
   const { data: notifications } = await supabase
     .from("notifications")
@@ -17,18 +37,25 @@ export default async function TruckDashboard() {
     .order("created_at", { ascending: false })
     .limit(25);
 
-  const { data: requests } = await supabase
-    .from("truck_requests_inbox")
-    .select("*")
-    .eq("truck_id", myTruck?.id)
-    .order("start_time", { ascending: true });
+  // Which inbox to show on initial render:
+  const initialTruckId = role === "truck_owner" ? myTruck?.id ?? null : null;
+
+  const { data: requests } = initialTruckId
+    ? await supabase
+        .from("truck_requests_inbox")
+        .select("*")
+        .eq("truck_id", initialTruckId)
+        .order("start_time", { ascending: true })
+    : { data: [] as any[] };
 
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h2 style={{ marginTop: 0 }}>Food Truck</h2>
-          <div className="small">Truck: <strong>{myTruck?.display_name || "Not set"}</strong></div>
+          <div className="small">
+            Truck: <strong>{myTruck?.display_name || (role === "admin" ? "Admin (select below)" : "Not set")}</strong>
+          </div>
         </div>
         <Link className="btn" href="/truck/requests">View all requests</Link>
       </div>
@@ -59,39 +86,13 @@ export default async function TruckDashboard() {
       <hr />
 
       <h3 style={{ marginTop: 0 }}>Pending requests</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>When</th>
-            <th>Location</th>
-            <th>Notes</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(requests || []).map((r: any) => (
-            <tr key={r.request_id}>
-              <td>
-                {new Date(r.start_time).toLocaleDateString()}{" "}
-                {new Date(r.start_time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})} - {new Date(r.end_time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
-              </td>
-              <td>{r.location_name}</td>
-              <td className="small">{r.notes || ""}</td>
-              <td>
-                <form action={`/truck/requests/${r.request_id}/accept`} method="post" style={{ display: "inline" }}>
-                  <button className="btn primary" type="submit">Accept</button>
-                </form>{" "}
-                <form action={`/truck/requests/${r.request_id}/ignore`} method="post" style={{ display: "inline" }}>
-                  <button className="btn" type="submit">Ignore</button>
-                </form>
-              </td>
-            </tr>
-          ))}
-          {(requests || []).length === 0 && (
-            <tr><td colSpan={4} className="small">No pending requests.</td></tr>
-          )}
-        </tbody>
-      </table>
+
+      <RequestActions
+        role={role}
+        initialTruckId={initialTruckId}
+        adminTrucks={adminTruckOptions}
+        initialRequests={requests || []}
+      />
     </div>
   );
 }
@@ -105,4 +106,3 @@ function Forbidden() {
     </div>
   );
 }
-
