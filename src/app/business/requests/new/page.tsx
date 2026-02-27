@@ -1,7 +1,18 @@
 "use client";
 
 import { useState } from "react";
-
+<p className="small">BUILD MARKER: REQUEST-PAGE-API-FETCH</p>
+<button
+  className="btn"
+  type="button"
+  onClick={async () => {
+    console.log("PING CLICKED");
+    const r = await fetch("/api/requests/create", { method: "POST" });
+    console.log("PING RESP", r.status);
+  }}
+>
+  Ping API (debug)
+</button>
 export default function NewRequestPage() {
   const [specific, setSpecific] = useState(true);
   const [requestedTruckId, setRequestedTruckId] = useState("");
