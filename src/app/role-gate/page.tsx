@@ -1,3 +1,5 @@
+﻿export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { getUserAndRole } from "../../lib/auth";
 
@@ -35,3 +37,4 @@ function RedirectCard({ href, label }: { href: string; label: string }) {
     </div>
   );
 }
+

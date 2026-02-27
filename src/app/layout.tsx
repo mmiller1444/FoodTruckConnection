@@ -1,4 +1,4 @@
-import "./globals.css";
+﻿import "./globals.css";
 import Link from "next/link";
 import { createClient } from "../lib/supabase/server";
 import { getUserAndRole } from "../lib/auth";
@@ -43,7 +43,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <Link href="/admin/users" className="btn">
                     Users
                   </Link>
-                </>
+                
+                  <Link href="/business/dashboard" className="btn">Business</Link>
+                  <Link href="/truck/dashboard" className="btn">Trucks</Link>
+</>
               )}
             </div>
 
@@ -101,3 +104,4 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     </html>
   );
 }
+

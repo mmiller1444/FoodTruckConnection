@@ -1,3 +1,5 @@
+﻿export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { getUserAndRole, assertRole } from "../../../lib/auth";
 import { createClient } from "../../../lib/supabase/server";
@@ -17,7 +19,7 @@ export default async function AdminUsersPage() {
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ marginTop: 0 }}>Admin → Users</h2>
+        <h2 style={{ marginTop: 0 }}>Admin â†’ Users</h2>
         <Link className="btn" href="/admin">Back to Admin</Link>
       </div>
 
@@ -90,3 +92,4 @@ function Forbidden() {
     </div>
   );
 }
+

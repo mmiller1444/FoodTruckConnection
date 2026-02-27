@@ -1,3 +1,5 @@
+﻿export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { getUserAndRole, assertRole } from "../../lib/auth";
 import { createClient } from "../../lib/supabase/server";
@@ -100,7 +102,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { day
         <tbody>
           {(releases || []).map((r: any) => (
             <tr key={r.id}>
-              <td>{r.is_active ? "✅" : ""}</td>
+              <td>{r.is_active ? "âœ…" : ""}</td>
               <td><code>{r.version}</code></td>
               <td className="small">{r.notes || ""}</td>
               <td className="small">{new Date(r.created_at).toLocaleString()}</td>
@@ -141,3 +143,4 @@ function Forbidden() {
     </div>
   );
 }
+

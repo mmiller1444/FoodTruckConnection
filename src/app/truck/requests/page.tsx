@@ -1,10 +1,10 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { getUserAndRole, assertRole } from "../../../lib/auth";
 import { createClient } from "../../../lib/supabase/server";
 
 export default async function TruckRequestsPage() {
   const { role, user } = await getUserAndRole();
-  if (!assertRole(role, ["truck_owner"])) return <Forbidden />;
+  if (!assertRole(role, ["truck_owner", "admin"])) return <Forbidden />;
 
   const supabase = createClient();
   const { data: myTruck } = await supabase.from("trucks").select("id, display_name").eq("owner_id", user!.id).single();
@@ -62,3 +62,4 @@ function Forbidden() {
     </div>
   );
 }
+

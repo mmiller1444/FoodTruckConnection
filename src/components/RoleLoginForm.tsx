@@ -32,8 +32,7 @@ export default function RoleLoginForm({ title, subtitle, redirectTo }: Props) {
       return;
     }
 
-    router.refresh();
-    router.push(redirectTo);
+    router.push(redirectTo);`n    router.refresh();`n`n    router.refresh();
   }
 
   return (
@@ -74,3 +73,5 @@ export default function RoleLoginForm({ title, subtitle, redirectTo }: Props) {
     </div>
   );
 }
+
+
