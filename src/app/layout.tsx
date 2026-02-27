@@ -36,15 +36,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </Link>
               )}
               {role === "admin" && (
-                <>
-                  <Link href="/admin" className="btn">
-                    Admin
-                  </Link>
-                  <Link href="/admin/users" className="btn">
-                    Users
-                  </Link>
-                </>
-              )}
+				<>
+				<Link href="/admin" className="btn">Admin</Link>
+				<Link href="/admin/users" className="btn">Users</Link>
+				<Link href="/business/dashboard" className="btn">Business</Link>
+				<Link href="/truck/dashboard" className="btn">Trucks</Link>
+				</>
+			)}
             </div>
 
             <div className="row" style={{ alignItems: "center", gap: 8 }}>

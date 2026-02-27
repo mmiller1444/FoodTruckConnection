@@ -4,7 +4,7 @@ import { createClient } from "../../../lib/supabase/server";
 
 export default async function BusinessDashboard() {
   const { role, user } = await getUserAndRole();
-  if (!assertRole(role, ["business_owner"])) return <Forbidden />;
+  if (!assertRole(role, ["business_owner", "admin"])) return <Forbidden />;
 
   const supabase = createClient();
 

@@ -4,7 +4,7 @@ import { createClient } from "../../../lib/supabase/server";
 
 export default async function TruckDashboard() {
   const { role, user } = await getUserAndRole();
-  if (!assertRole(role, ["truck_owner"])) return <Forbidden />;
+  if (!assertRole(role, ["truck_owner", "admin"])) return <Forbidden />;
 
   const supabase = createClient();
 

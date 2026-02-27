@@ -55,7 +55,7 @@ export default async function RoleGatePage() {
 
   if (role === "truck_owner") return <RedirectCard href="/truck/dashboard" label="Go to Truck Owner Dashboard" />;
   if (role === "business_owner") return <RedirectCard href="/business/dashboard" label="Go to Business Owner Dashboard" />;
-  return <RedirectCard href="/admin" label="Go to Admin" />;
+  return <AdminChooser />;
 }
 
 function RedirectCard({ href, label }: { href: string; label: string }) {
@@ -65,6 +65,19 @@ function RedirectCard({ href, label }: { href: string; label: string }) {
       <Link className="btn primary" href={href}>
         {label}
       </Link>
+    </div>
+  );
+}
+function AdminChooser() {
+  return (
+    <div className="card">
+      <h2 style={{ marginTop: 0 }}>Admin</h2>
+      <p className="small">Choose where you want to go.</p>
+      <div className="row">
+        <Link className="btn primary" href="/admin">Admin dashboard</Link>
+        <Link className="btn" href="/business/dashboard">Business dashboard</Link>
+        <Link className="btn" href="/truck/dashboard">Truck dashboard</Link>
+      </div>
     </div>
   );
 }
