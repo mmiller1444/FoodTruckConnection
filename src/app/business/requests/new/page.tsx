@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-<p className="small">BUILD MARKER: REQUEST-PAGE-API-FETCH</p>
-<button
-  className="btn"
-  type="button"
-  onClick={async () => {
-    console.log("PING CLICKED");
-    const r = await fetch("/api/requests/create", { method: "POST" });
-    console.log("PING RESP", r.status);
-  }}
->
-  Ping API (debug)
-</button>
+
 export default function NewRequestPage() {
   const [specific, setSpecific] = useState(true);
   const [requestedTruckId, setRequestedTruckId] = useState("");
@@ -33,7 +22,6 @@ export default function NewRequestPage() {
     setBusy(true);
 
     try {
-      // PROOF this ran:
       console.log("Submitting via /api/requests/create");
 
       const payload = {
@@ -89,7 +77,7 @@ export default function NewRequestPage() {
             className="input"
             value={requestedTruckId}
             onChange={(e) => setRequestedTruckId(e.target.value)}
-            placeholder="Truck UUID (or we can change this to a dropdown)"
+            placeholder="Truck UUID"
           />
         </>
       )}
@@ -120,24 +108,23 @@ export default function NewRequestPage() {
         required
       />
 
-      <div className="row">
-        <div style={{ flex: 1 }}>
-          <div className="label">Lat (optional)</div>
-          <input className="input" value={locationLat} onChange={(e) => setLocationLat(e.target.value)} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <div className="label">Lng (optional)</div>
-          <input className="input" value={locationLng} onChange={(e) => setLocationLng(e.target.value)} />
-        </div>
-      </div>
-
       <div className="label">Notes</div>
-      <textarea className="input" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
+      <textarea
+        className="input"
+        rows={3}
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+      />
 
       {err && <p style={{ color: "var(--danger)" }}>{err}</p>}
       {ok && <p style={{ color: "var(--success)" }}>{ok}</p>}
 
-      <button className="btn primary" type="button" onClick={submitRequest} disabled={busy}>
+      <button
+        className="btn primary"
+        type="button"
+        onClick={submitRequest}
+        disabled={busy}
+      >
         {busy ? "Submitting..." : "Submit request"}
       </button>
     </div>
