@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,19 +22,18 @@ export default function RoleLoginForm({ title, subtitle, redirectTo }: Props) {
     e.preventDefault();
     setErr("");
 
-    // inside RoleLoginForm.tsx
-const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-if (error) {
-  setErr(error.message);
-  return;
-}
+    if (error) {
+      setErr(error.message);
+      return;
+    }
 
-// refresh server components (layout header)
-router.refresh();
-
-// then navigate
-router.push(redirectTo);
+    router.refresh();
+    router.push(redirectTo);
   }
 
   return (
