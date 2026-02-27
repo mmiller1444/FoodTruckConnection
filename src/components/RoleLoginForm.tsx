@@ -22,16 +22,19 @@ export default function RoleLoginForm({ title, subtitle, redirectTo }: Props) {
     e.preventDefault();
     setErr("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // inside RoleLoginForm.tsx
+const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      setErr(error.message);
-    } else {
-      router.push(redirectTo);
-    }
+if (error) {
+  setErr(error.message);
+  return;
+}
+
+// refresh server components (layout header)
+router.refresh();
+
+// then navigate
+router.push(redirectTo);
   }
 
   return (

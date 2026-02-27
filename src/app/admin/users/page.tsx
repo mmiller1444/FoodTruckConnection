@@ -77,6 +77,7 @@ export default async function AdminUsersPage() {
       <p className="small">
         Recommended: set the first signup as <code>admin</code> automatically using the trigger SQL in{" "}
         <code>docs/first-user-admin.sql</code>.
+		<Link className="btn" href="/admin/users">Refresh</Link>
       </p>
     </div>
   );
