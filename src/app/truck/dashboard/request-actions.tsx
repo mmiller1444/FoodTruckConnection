@@ -42,7 +42,6 @@ export default function RequestActions(props: {
         return;
       }
 
-      // Reload to update pending list + notifications
       window.location.reload();
     } finally {
       setBusy(false);
@@ -71,7 +70,7 @@ export default function RequestActions(props: {
         <>
           <div className="label">Act as truck (admin)</div>
           <select className="input" value={truckId} onChange={(e) => setTruckId(e.target.value)}>
-            <option value="">Select a truckâ€¦</option>
+            <option value="">Select a truck…</option>
             {adminTrucks.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.display_name || t.id}
@@ -99,8 +98,8 @@ export default function RequestActions(props: {
             <tr key={r.request_id}>
               <td>
                 {new Date(r.start_time).toLocaleDateString()}{" "}
-                {new Date(r.start_time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})} -{" "}
-                {new Date(r.end_time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
+                {new Date(r.start_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -{" "}
+                {new Date(r.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
               </td>
               <td>{r.location_name}</td>
               <td className="small">{r.notes || ""}</td>
