@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getUserAndRole } from "../../lib/auth";
-
+export const dynamic = "force-dynamic";
 export default async function RoleGatePage() {
   const { role, user, fullName } = await getUserAndRole();
   if (!user) return null;
