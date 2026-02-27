@@ -1,8 +1,9 @@
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { getUserAndRole, assertRole } from "../../lib/auth";
 import { createClient } from "../../lib/supabase/server";
 import { dayRangeUtcIso, todayInTz } from "../../lib/time";
-export const dynamic = "force-dynamic";
+
 export default async function AdminPage({ searchParams }: { searchParams?: { day?: string } }) {
   const { role } = await getUserAndRole();
   if (!assertRole(role, ["admin"])) return <Forbidden />;
