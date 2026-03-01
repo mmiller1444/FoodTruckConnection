@@ -20,3 +20,6 @@ export function createServerComponentClient() {
     },
   });
 }
+
+// Back-compat: keep old import name used across the app
+export const createClient = createServerComponentClient;
