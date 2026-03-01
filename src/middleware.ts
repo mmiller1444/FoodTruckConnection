@@ -16,14 +16,15 @@ export async function middleware(req: NextRequest) {
           res.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: any) {
-        res.cookies.set({ name, value: "", ...options, maxAge: 0 });
-}
-        }
-      }
+          res.cookies.set({ name, value: "", ...options, maxAge: 0 });
+        },
+      },
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const pathname = req.nextUrl.pathname;
 
@@ -38,7 +39,14 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/favicon") ||
     pathname.startsWith("/signout");
 
+  // If calling an API route, don't redirect to /login (return 401 JSON instead)
+  const isApi = pathname.startsWith("/api/");
+
   if (!user && !isPublic) {
+    if (isApi) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
