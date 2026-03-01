@@ -1,4 +1,5 @@
-import { createClient } from "./supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createServerComponentClient } from "./supabase/server";
 
 export type UserRole = "admin" | "truck_owner" | "business_owner" | null;
 
@@ -6,25 +7,23 @@ export function assertRole(role: UserRole, allowed: Exclude<UserRole, null>[]) {
   return role !== null && allowed.includes(role as any);
 }
 
-export async function getUserAndRole() {
-  const supabase = createClient();
+export async function getUserAndRole(supabase?: SupabaseClient) {
+  const sb = supabase ?? createServerComponentClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user }, error: userErr } = await sb.auth.getUser();
 
-  if (!user) {
+  if (userErr || !user) {
     return {
       user: null,
       role: null as UserRole,
       fullName: null,
       email: null,
       profileExists: false,
-      profileError: null as string | null,
+      profileError: userErr?.message ?? null,
     };
   }
 
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await sb
     .from("profiles")
     .select("role, full_name, email")
     .eq("id", user.id)

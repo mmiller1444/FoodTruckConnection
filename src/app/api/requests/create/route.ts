@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
+import { createRouteClient } from "../../../../lib/supabase/route";
 import { getUserAndRole } from "../../../../lib/auth";
 
 function bad(status: number, msg: string) {
@@ -7,7 +8,9 @@ function bad(status: number, msg: string) {
 }
 
 export async function POST(req: Request) {
-  const { user, role } = await getUserAndRole();
+  // IMPORTANT: use route client so auth cookies can be read/written correctly in route handlers
+  const sb = createRouteClient();
+  const { user, role } = await getUserAndRole(sb);
 
   if (!user) return bad(401, "Unauthorized");
 
@@ -20,7 +23,6 @@ export async function POST(req: Request) {
   if (!body) return bad(400, "Invalid JSON");
 
   const {
-    // admin override: who is the business placing the request
     business_id, // REQUIRED when admin
     requested_truck_id,
     blanket_request,
@@ -36,13 +38,14 @@ export async function POST(req: Request) {
     return bad(400, "Missing required fields");
   }
 
-  // Determine which business owns this request
   const effectiveBusinessId = isAdmin ? business_id : user.id;
 
   if (isAdmin && !effectiveBusinessId) {
     return bad(400, "Admins must supply business_id");
   }
 
+  // Use service role client for DB write (bypasses RLS),
+  // but only after verifying the caller is allowed (admin/business).
   const admin = createAdminClient();
 
   const { data: inserted, error } = await admin
@@ -57,7 +60,7 @@ export async function POST(req: Request) {
       location_lat: location_lat ?? null,
       location_lng: location_lng ?? null,
       notes: notes ?? null,
-      created_by: user.id, // add this column if you want an audit trail
+      created_by: user.id, // keep if column exists
     })
     .select("id")
     .single();
