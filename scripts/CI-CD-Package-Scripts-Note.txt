@@ -1,0 +1,12 @@
+Required package.json scripts:
+
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  }
+}
+
+If you already have these, no change is needed.
